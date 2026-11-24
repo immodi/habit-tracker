@@ -1,5 +1,10 @@
 package com.modi.habittracker.ui
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -15,7 +20,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.modi.habittracker.ui.components.AppTopBar
-import com.modi.habittracker.ui.components.SplashScreen
+import com.modi.habittracker.ui.components.BootScreen
 import com.modi.habittracker.ui.components.TopDestination
 import com.modi.habittracker.ui.screens.ArchivedScreen
 import com.modi.habittracker.ui.screens.AuthScreen
@@ -31,7 +36,7 @@ fun HabitTrackerApp(viewModel: MainViewModel = viewModel()) {
 
     Surface(Modifier.fillMaxSize(), color = AppColors.Background) {
         when {
-            state.authLoading -> SplashScreen()
+            state.authLoading -> BootScreen()
             state.user == null -> AuthScreen(
                 state = state,
                 onSignIn = viewModel::signIn,
@@ -77,6 +82,16 @@ private fun SignedInApp(state: AppUiState, viewModel: MainViewModel) {
             navController = navController,
             startDestination = TopDestination.TODAY.route,
             modifier = Modifier.padding(innerPadding),
+            enterTransition = {
+                fadeIn(tween(220)) +
+                    slideInVertically(tween(220)) { height -> height / 24 }
+            },
+            exitTransition = { fadeOut(tween(140)) },
+            popEnterTransition = { fadeIn(tween(220)) },
+            popExitTransition = {
+                fadeOut(tween(140)) +
+                    slideOutVertically(tween(140)) { height -> height / 24 }
+            },
         ) {
             composable(TopDestination.TODAY.route) {
                 TodayScreen(
@@ -84,15 +99,6 @@ private fun SignedInApp(state: AppUiState, viewModel: MainViewModel) {
                     onToggle = viewModel::toggleCheckIn,
                     onOpenHabit = { habitId -> navController.navigate("habit/$habitId") },
                     onAddHabit = { navController.navigate("new-habit") },
-                    onOpenArchived = {
-                        navController.navigate(TopDestination.ARCHIVED.route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
                 )
             }
 

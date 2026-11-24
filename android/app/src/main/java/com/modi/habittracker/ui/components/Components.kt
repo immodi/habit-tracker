@@ -1,5 +1,9 @@
 package com.modi.habittracker.ui.components
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -35,13 +39,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -134,7 +139,7 @@ fun AppTopBar(current: TopDestination, onNavigate: (TopDestination) -> Unit) {
                     onClick = { onNavigate(TopDestination.TODAY) },
                 ) {
                     Icon(
-                        painterResource(R.drawable.ic_sun),
+                        painterResource(R.drawable.ic_habit_list),
                         contentDescription = TopDestination.TODAY.label,
                         tint = if (current == TopDestination.TODAY) {
                             AppColors.Accent
@@ -279,6 +284,11 @@ fun SummaryCard(
     hasFlexible: Boolean = false,
 ) {
     val percent = if (total == 0) 0 else ((done.toFloat() / total) * 100).toInt()
+    val animatedPercent by animateIntAsState(
+        targetValue = percent,
+        animationSpec = tween(450),
+        label = "summaryPercent",
+    )
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -291,7 +301,7 @@ fun SummaryCard(
                 .padding(18.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            ProgressRing(percent)
+            ProgressRing(animatedPercent)
             Spacer(Modifier.width(18.dp))
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -325,6 +335,11 @@ fun SummaryCard(
 
 @Composable
 fun ProgressBar(fraction: Float, modifier: Modifier = Modifier) {
+    val animatedFraction by animateFloatAsState(
+        targetValue = fraction.coerceIn(0f, 1f),
+        animationSpec = tween(450),
+        label = "progressFraction",
+    )
     Box(
         modifier
             .fillMaxWidth()
@@ -334,7 +349,7 @@ fun ProgressBar(fraction: Float, modifier: Modifier = Modifier) {
     ) {
         Box(
             Modifier
-                .fillMaxWidth(fraction.coerceIn(0f, 1f))
+                .fillMaxWidth(animatedFraction)
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(50))
                 .background(
@@ -488,12 +503,40 @@ fun HabitCard(
         else -> "Not done yet"
     }
 
-    val container = if (done) {
-        AppColors.Accent.copy(alpha = 0.06f).compositeOver(AppColors.Surface)
-    } else {
-        AppColors.Surface
-    }
-    val borderColor = if (done) AppColors.Accent.copy(alpha = 0.26f) else AppColors.Line
+    val container by animateColorAsState(
+        targetValue = if (done) {
+            AppColors.Accent.copy(alpha = 0.06f).compositeOver(AppColors.Surface)
+        } else {
+            AppColors.Surface
+        },
+        animationSpec = tween(220),
+        label = "habitContainer",
+    )
+    val borderColor by animateColorAsState(
+        targetValue = if (done) AppColors.Accent.copy(alpha = 0.26f) else AppColors.Line,
+        animationSpec = tween(220),
+        label = "habitBorder",
+    )
+    val toggleFill by animateColorAsState(
+        targetValue = if (done) AppColors.Accent else Color.Transparent,
+        animationSpec = tween(200),
+        label = "toggleFill",
+    )
+    val toggleBorder by animateColorAsState(
+        targetValue = if (done) AppColors.Accent else AppColors.LineStrong,
+        animationSpec = tween(200),
+        label = "toggleBorder",
+    )
+    val checkAlpha by animateFloatAsState(
+        targetValue = if (done) 1f else 0f,
+        animationSpec = tween(180),
+        label = "toggleCheck",
+    )
+    val checkScale by animateFloatAsState(
+        targetValue = if (done) 1f else 0.7f,
+        animationSpec = tween(200),
+        label = "toggleCheckScale",
+    )
 
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -501,42 +544,15 @@ fun HabitCard(
         color = container,
         border = BorderStroke(1.dp, borderColor),
     ) {
-        Row(
+        Column(
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
+                .padding(14.dp),
         ) {
-            Surface(
-                onClick = onToggle,
-                shape = CircleShape,
-                color = if (done) AppColors.Accent else Color.Transparent,
-                border = BorderStroke(
-                    2.dp,
-                    if (done) AppColors.Accent else AppColors.LineStrong,
-                ),
-                modifier = Modifier
-                    .size(46.dp)
-                    .semantics {
-                        contentDescription = if (done) {
-                            "Mark ${habit.name} not done"
-                        } else {
-                            "Mark ${habit.name} done"
-                        }
-                        role = Role.Button
-                    },
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Icon(
-                        Icons.Filled.Check,
-                        contentDescription = null,
-                        tint = if (done) AppColors.AccentInk else Color.Transparent,
-                        modifier = Modifier.size(22.dp),
-                    )
-                }
-            }
-            Spacer(Modifier.width(14.dp))
-            Column(Modifier.weight(1f)) {
                 Text(
                     habit.name,
                     style = MaterialTheme.typography.titleMedium,
@@ -544,31 +560,63 @@ fun HabitCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
+                        .weight(1f)
                         .clickable(onClick = onOpen)
                         .semantics {
                             contentDescription = "Open ${habit.name}"
                             role = Role.Button
                         },
                 )
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(top = 5.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    if (streak.value > 0) {
-                        StreakPill(streak, schedule.type)
-                        Spacer(Modifier.width(8.dp))
-                    }
-                    Text(
-                        statusText,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = AppColors.MutedDim,
-                        maxLines = 1,
-                        modifier = Modifier.weight(1f),
-                    )
-                    WeekStrip(week, today)
+                if (streak.value > 0) {
+                    Spacer(Modifier.width(10.dp))
+                    StreakPill(streak, schedule.type)
                 }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Surface(
+                    onClick = onToggle,
+                    shape = CircleShape,
+                    color = toggleFill,
+                    border = BorderStroke(2.dp, toggleBorder),
+                    modifier = Modifier
+                        .size(46.dp)
+                        .semantics {
+                            contentDescription = if (done) {
+                                "Mark ${habit.name} not done"
+                            } else {
+                                "Mark ${habit.name} done"
+                            }
+                            role = Role.Button
+                        },
+                ) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Icon(
+                            Icons.Filled.Check,
+                            contentDescription = null,
+                            tint = AppColors.AccentInk.copy(alpha = checkAlpha),
+                            modifier = Modifier
+                                .size(22.dp)
+                                .scale(checkScale),
+                        )
+                    }
+                }
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    statusText,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AppColors.MutedDim,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(Modifier.width(8.dp))
+                WeekStrip(week, today)
             }
         }
     }
@@ -857,29 +905,12 @@ fun LoadingRow(label: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun SplashScreen() {
+fun BootScreen() {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            BrandMark(size = 46.dp)
-            Spacer(Modifier.height(14.dp))
-            CircularProgressIndicator(
-                modifier = Modifier.size(18.dp),
-                strokeWidth = 2.dp,
-                color = AppColors.Accent,
-            )
-        }
-    }
-}
-
-@Composable
-fun ArchivedFooterLink(onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-        TextButton(onClick = onClick) {
-            Text(
-                "Archived habits",
-                color = AppColors.Muted,
-                style = MaterialTheme.typography.bodySmall,
-            )
-        }
+        CircularProgressIndicator(
+            modifier = Modifier.size(18.dp),
+            strokeWidth = 2.dp,
+            color = AppColors.Accent,
+        )
     }
 }

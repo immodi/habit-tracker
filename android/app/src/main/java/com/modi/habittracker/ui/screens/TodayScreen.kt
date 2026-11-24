@@ -24,7 +24,6 @@ import com.modi.habittracker.logic.DateKeys
 import com.modi.habittracker.logic.StreakCalculator
 import com.modi.habittracker.ui.AppUiState
 import com.modi.habittracker.ui.components.AppCard
-import com.modi.habittracker.ui.components.ArchivedFooterLink
 import com.modi.habittracker.ui.components.EmptyState
 import com.modi.habittracker.ui.components.HabitCard
 import com.modi.habittracker.ui.components.LoadingRow
@@ -41,7 +40,6 @@ fun TodayScreen(
     onToggle: (habitId: String, dateKey: String, done: Boolean) -> Unit,
     onOpenHabit: (String) -> Unit,
     onAddHabit: () -> Unit,
-    onOpenArchived: () -> Unit,
 ) {
     val active = state.habits.filter { !it.archived }
     val visible = active.filter { habit ->
@@ -98,10 +96,6 @@ fun TodayScreen(
                         )
                     },
                 )
-                if (state.habits.isNotEmpty()) {
-                    Spacer(Modifier.height(12.dp))
-                    ArchivedFooterLink(onOpenArchived)
-                }
             }
 
             else -> {
@@ -145,8 +139,6 @@ fun TodayScreen(
                     modifier = Modifier.fillMaxWidth(),
                     leadingIcon = { Icon(Icons.Filled.Add, null, Modifier.size(18.dp)) },
                 )
-                Spacer(Modifier.height(10.dp))
-                ArchivedFooterLink(onOpenArchived)
             }
         }
     }
