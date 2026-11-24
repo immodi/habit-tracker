@@ -1,9 +1,9 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { HabitsProvider } from '../hooks/useHabits';
-import { ArchiveIcon, CheckIcon, SettingsIcon, SunIcon } from './icons';
+import { ArchiveIcon, CheckIcon, HabitListIcon, SettingsIcon } from './icons';
 
 const navItems = [
-  { to: '/', label: 'Today', icon: SunIcon, end: true },
+  { to: '/', label: 'Today', icon: HabitListIcon, end: true },
   { to: '/archived', label: 'Archived', icon: ArchiveIcon, end: false },
   { to: '/settings', label: 'Settings', icon: SettingsIcon, end: false },
 ];
@@ -44,13 +44,10 @@ export function AppShell() {
   );
 }
 
-export function Splash() {
+export function BootScreen() {
   return (
-    <div className="splash">
-      <span className="brand-mark brand-mark-lg">
-        <CheckIcon size={22} />
-      </span>
-      <span className="splash-text">Habits</span>
+    <div className="boot" role="status" aria-label="Loading">
+      <span className="spinner" aria-hidden="true" />
     </div>
   );
 }

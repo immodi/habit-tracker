@@ -121,12 +121,6 @@ export function Today() {
           </Link>
         </>
       )}
-
-      {active.length > 0 ? (
-        <div className="footer-link">
-          <Link to="/archived">Archived habits</Link>
-        </div>
-      ) : null}
     </div>
   );
 }

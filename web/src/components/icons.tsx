@@ -23,11 +23,13 @@ export function CheckIcon({ size = 20, className }: IconProps) {
   );
 }
 
-export function SunIcon({ size = 20, className }: IconProps) {
+export function HabitListIcon({ size = 20, className }: IconProps) {
   return (
     <svg {...base(size)} className={className}>
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+      <path d="M9 6h12M9 12h12M9 18h12" />
+      <path d="m3 6 1.5 1.5L7 5" />
+      <path d="m3 12 1.5 1.5L7 11" />
+      <path d="m3 18 1.5 1.5L7 17" />
     </svg>
   );
 }

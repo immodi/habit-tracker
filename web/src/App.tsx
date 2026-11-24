@@ -1,6 +1,6 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
-import { AppShell, Splash } from './components/AppShell';
+import { AppShell, BootScreen } from './components/AppShell';
 import { SignIn } from './pages/SignIn';
 import { Today } from './pages/Today';
 import { HabitEditor } from './pages/HabitEditor';
@@ -10,7 +10,7 @@ import { Settings } from './pages/Settings';
 
 function RequireAuth() {
   const { user, loading } = useAuth();
-  if (loading) return <Splash />;
+  if (loading) return <BootScreen />;
   if (!user) return <Navigate to="/signin" replace />;
   return <Outlet />;
 }

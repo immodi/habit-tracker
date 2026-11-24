@@ -8,6 +8,7 @@ import {
 } from 'firebase/auth';
 import { auth } from '../firebase';
 import { useAuth } from '../hooks/useAuth';
+import { BootScreen } from '../components/AppShell';
 import { CheckIcon, GoogleIcon } from '../components/icons';
 
 type Mode = 'signin' | 'register';
@@ -52,7 +53,7 @@ export function SignIn() {
     document.title = 'Sign in · Habits';
   }, []);
 
-  if (loading) return <div className="splash" />;
+  if (loading) return <BootScreen />;
   if (user) return <Navigate to="/" replace />;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
