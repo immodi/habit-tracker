@@ -1,0 +1,25 @@
+# Secrets and local Firebase config
+.env
+.env.local
+.env.*.local
+*.jks
+
+# Dependencies and build output
+node_modules/
+dist/
+build/
+.gradle/
+local.properties
+*.apk
+*.aab
+
+# Tooling
+.idea/
+.vscode/
+.DS_Store
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebase/
+
+.wrangler/

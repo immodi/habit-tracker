@@ -1,0 +1,86 @@
+name: Android release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  VERSION_NAME: 1.0.${{ github.run_number }}
+  VERSION_CODE: ${{ github.run_number }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # Optional: set GOOGLE_SERVICES_JSON (base64 of android/app/google-services.json)
+      # to override the committed Firebase config in CI.
+      - name: Write Firebase config
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            echo "$GOOGLE_SERVICES_JSON" | base64 -d > android/app/google-services.json
+          fi
+          test -s android/app/google-services.json
+
+      - name: Build and test
+        working-directory: android
+        run: ./gradlew :app:assembleRelease :app:testDebugUnitTest --no-daemon --console=plain
+
+      - name: Verify APK signature
+        run: |
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          APKSIGNER=$(find "$SDK/build-tools" -name apksigner -type f | sort -V | tail -1)
+          "$APKSIGNER" verify --print-certs android/app/build/outputs/apk/release/app-release.apk
+          mkdir -p dist
+          cp android/app/build/outputs/apk/release/app-release.apk \
+            "dist/habit-tracker-${VERSION_NAME}.apk"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: habit-tracker-apk
+          path: dist/habit-tracker-${{ env.VERSION_NAME }}.apk
+          retention-days: 30
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION_NAME }}
+          name: Habit Tracker v${{ env.VERSION_NAME }}
+          body: |
+            Sideloadable Android APK for Habit Tracker.
+
+            - Android 7.0 (API 24) or newer.
+            - Signed with the project's stable sideload key, which is registered
+              with Firebase, so Google sign-in works.
+            - Built from commit ${{ github.sha }}.
+          files: dist/habit-tracker-${{ env.VERSION_NAME }}.apk
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
