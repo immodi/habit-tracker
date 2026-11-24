@@ -468,17 +468,38 @@ a {
 }
 
 .habit-card {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
   border-radius: 18px;
   border: 1px solid var(--line);
   background: var(--surface);
   transition:
     border-color 0.18s ease,
     background 0.18s ease;
+}
+
+.habit-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.habit-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.habit-controls .meta-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .habit-card:hover {
@@ -534,13 +555,10 @@ a {
   background: var(--accent-strong);
 }
 
-.habit-main {
-  min-width: 0;
-}
-
 .habit-name {
   display: block;
-  width: fit-content;
+  flex: 1;
+  min-width: 0;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -559,14 +577,6 @@ a {
 
 .is-done .habit-name {
   color: #c9d4e2;
-}
-
-.habit-meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 9px;
-  margin-top: 5px;
 }
 
 .meta-text {
@@ -633,21 +643,6 @@ a {
 
 .add-button {
   margin-top: 2px;
-}
-
-.footer-link {
-  margin-top: 24px;
-  text-align: center;
-}
-
-.footer-link a {
-  color: var(--muted);
-  font-size: 13px;
-  text-decoration: none;
-}
-
-.footer-link a:hover {
-  color: var(--accent);
 }
 
 /* -------------------------------------------------------------- forms ------ */
@@ -1258,20 +1253,10 @@ a {
   color: var(--muted-2);
 }
 
-.splash {
+.boot {
   min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-}
-
-.splash-text {
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--muted);
+  display: grid;
+  place-items: center;
 }
 
 .loading-block {
@@ -1332,8 +1317,8 @@ a {
   }
 
   .habit-card {
-    padding: 11px 12px;
-    gap: 12px;
+    padding: 12px;
+    gap: 7px;
   }
 
   .toggle {

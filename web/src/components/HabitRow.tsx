@@ -33,32 +33,32 @@ export function HabitRow({ habit, logs, today, onToggle }: HabitRowProps) {
 
   return (
     <article className={`habit-card${done ? ' is-done' : ''}`}>
-      <button
-        type="button"
-        className={`toggle${done ? ' is-done' : ''}`}
-        aria-pressed={done}
-        aria-label={done ? `Mark ${habit.name} not done` : `Mark ${habit.name} done`}
-        onClick={() => onToggle(today, !done)}
-      >
-        <CheckIcon size={22} />
-      </button>
-
-      <div className="habit-main">
+      <div className="habit-head">
         <Link to={`/habits/${habit.id}`} className="habit-name">
           {habit.name}
         </Link>
-        <div className="habit-meta">
-          {streak.value > 0 ? (
-            <span className="streak-pill">
-              <FlameIcon size={12} />
-              {streak.value}
-              {streak.capped ? '+' : ''}
-              {streakSuffix(schedule.type)}
-            </span>
-          ) : null}
-          <span className="meta-text">{statusText}</span>
-          <WeekStrip cells={week} today={today} />
-        </div>
+        {streak.value > 0 ? (
+          <span className="streak-pill">
+            <FlameIcon size={12} />
+            {streak.value}
+            {streak.capped ? '+' : ''}
+            {streakSuffix(schedule.type)}
+          </span>
+        ) : null}
+      </div>
+
+      <div className="habit-controls">
+        <button
+          type="button"
+          className={`toggle${done ? ' is-done' : ''}`}
+          aria-pressed={done}
+          aria-label={done ? `Mark ${habit.name} not done` : `Mark ${habit.name} done`}
+          onClick={() => onToggle(today, !done)}
+        >
+          <CheckIcon size={22} />
+        </button>
+        <span className="meta-text">{statusText}</span>
+        <WeekStrip cells={week} today={today} />
       </div>
     </article>
   );
