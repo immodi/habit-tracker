@@ -14,7 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -67,13 +67,7 @@ private fun SignedInApp(state: AppUiState, viewModel: MainViewModel) {
             val destination = topDestination
             if (destination != null) {
                 AppTopBar(destination) { target ->
-                    navController.navigate(target.route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+                    navigateTop(navController, target)
                 }
             }
         },
@@ -114,6 +108,7 @@ private fun SignedInApp(state: AppUiState, viewModel: MainViewModel) {
                     },
                     onUpdate = { _, _ -> },
                     onArchive = {},
+                    onRestore = {},
                 )
             }
 
@@ -122,9 +117,7 @@ private fun SignedInApp(state: AppUiState, viewModel: MainViewModel) {
                 HabitDetailScreen(
                     state = state,
                     habitId = habitId,
-                    onBack = {
-                        navController.popBackStack(TopDestination.TODAY.route, false)
-                    },
+                    onBack = { navController.popBackStack() },
                     onEdit = {
                         if (habitId != null) navController.navigate("edit/$habitId")
                     },
@@ -146,9 +139,15 @@ private fun SignedInApp(state: AppUiState, viewModel: MainViewModel) {
                     },
                     onArchive = { id ->
                         viewModel.archiveHabit(id) {
+                            navController.popBackStack(TopDestination.TODAY.route, false)
                             navController.navigate(TopDestination.ARCHIVED.route) {
-                                popUpTo(navController.graph.findStartDestination().id)
+                                launchSingleTop = true
                             }
+                        }
+                    },
+                    onRestore = { id ->
+                        viewModel.restoreHabit(id) {
+                            navController.popBackStack(TopDestination.TODAY.route, false)
                         }
                     },
                 )
@@ -157,7 +156,7 @@ private fun SignedInApp(state: AppUiState, viewModel: MainViewModel) {
             composable(TopDestination.ARCHIVED.route) {
                 ArchivedScreen(
                     state = state,
-                    onRestore = viewModel::restoreHabit,
+                    onRestore = { id -> viewModel.restoreHabit(id) },
                     onOpenHabit = { habitId -> navController.navigate("habit/$habitId") },
                 )
             }
@@ -171,5 +170,17 @@ private fun SignedInApp(state: AppUiState, viewModel: MainViewModel) {
                 )
             }
         }
+    }
+}
+
+/**
+ * Switches between the top-level destinations. If the target is already on the
+ * back stack, everything above it is popped instead of pushing a duplicate.
+ */
+private fun navigateTop(navController: NavHostController, target: TopDestination) {
+    if (navController.popBackStack(target.route, inclusive = false)) return
+    navController.navigate(target.route) {
+        popUpTo(TopDestination.TODAY.route) { inclusive = false }
+        launchSingleTop = true
     }
 }

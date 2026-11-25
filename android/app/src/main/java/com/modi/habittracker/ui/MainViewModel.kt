@@ -181,7 +181,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         repository.setArchived(uid, habitId, archived = true)
     }
 
-    fun restoreHabit(habitId: String) = runAction { uid ->
+    fun restoreHabit(habitId: String, onSuccess: () -> Unit = {}) = runAction(onSuccess) { uid ->
         repository.setArchived(uid, habitId, archived = false)
     }
 

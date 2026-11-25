@@ -7,7 +7,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -71,8 +70,6 @@ import androidx.compose.ui.semantics.semantics
 import com.modi.habittracker.R
 import com.modi.habittracker.data.Habit
 import com.modi.habittracker.data.toSchedule
-import com.modi.habittracker.logic.DayCell
-import com.modi.habittracker.logic.DayStatus
 import com.modi.habittracker.logic.PeriodProgress
 import com.modi.habittracker.logic.Recurrence
 import com.modi.habittracker.logic.ScheduleType
@@ -121,7 +118,13 @@ fun AppTopBar(current: TopDestination, onNavigate: (TopDestination) -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(
-                Modifier.weight(1f),
+                Modifier
+                    .weight(1f)
+                    .clickable { onNavigate(TopDestination.TODAY) }
+                    .semantics {
+                        contentDescription = "Habits"
+                        role = Role.Button
+                    },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 BrandMark()
@@ -362,50 +365,6 @@ fun ProgressBar(fraction: Float, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun WeekStrip(cells: List<DayCell>, today: LocalDate, modifier: Modifier = Modifier) {
-    Row(
-        modifier,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        cells.forEach { cell ->
-            val isToday = cell.date == today
-            Box(
-                Modifier
-                    .size(12.dp)
-                    .then(
-                        if (isToday) {
-                            Modifier.border(1.dp, AppColors.LineStrong, CircleShape)
-                        } else {
-                            Modifier
-                        },
-                    ),
-                contentAlignment = Alignment.Center,
-            ) {
-                val fill = when (cell.status) {
-                    DayStatus.DONE -> AppColors.Accent
-                    DayStatus.MISSED -> Color.Transparent
-                    DayStatus.EMPTY -> Color.White.copy(alpha = 0.075f)
-                    DayStatus.OFF -> Color.White.copy(alpha = 0.06f)
-                    DayStatus.FUTURE -> Color.Transparent
-                }
-                val border = when (cell.status) {
-                    DayStatus.MISSED -> AppColors.LineStrong
-                    DayStatus.FUTURE -> AppColors.LineStrong.copy(alpha = 0.4f)
-                    else -> Color.Transparent
-                }
-                Box(
-                    Modifier
-                        .size(7.dp)
-                        .background(fill, CircleShape)
-                        .border(1.dp, border, CircleShape),
-                )
-            }
-        }
-    }
-}
-
-@Composable
 fun StreakPill(streak: Streak, type: ScheduleType, modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier,
@@ -488,7 +447,6 @@ fun HabitCard(
     val schedule = habit.toSchedule()
     val done = today in logs
     val streak = StreakCalculator.currentStreak(schedule, logs, today)
-    val week = StreakCalculator.dayCells(schedule, logs, today, 7)
     val progress = if (schedule.type.isFlexible) {
         Recurrence.progress(schedule, logs, today)
     } else {
@@ -615,8 +573,6 @@ fun HabitCard(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f),
                 )
-                Spacer(Modifier.width(8.dp))
-                WeekStrip(week, today)
             }
         }
     }

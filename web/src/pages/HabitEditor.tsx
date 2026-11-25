@@ -25,7 +25,7 @@ const DEFAULT_TARGET: Record<Exclude<ScheduleType, 'weekdays'>, number> = {
 export function HabitEditor() {
   const { habitId } = useParams<{ habitId: string }>();
   const isEditing = Boolean(habitId);
-  const { habits, loading, addHabit, updateHabit, archiveHabit } = useHabits();
+  const { habits, loading, addHabit, updateHabit, archiveHabit, restoreHabit } = useHabits();
   const navigate = useNavigate();
 
   const existing = habitId ? habits.find((habit) => habit.id === habitId) : undefined;
@@ -117,6 +117,19 @@ export function HabitEditor() {
       setError(archiveError instanceof Error ? archiveError.message : 'Could not archive.');
       setBusy(false);
       setConfirmArchive(false);
+    }
+  }
+
+  async function handleRestore() {
+    if (!existing) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await restoreHabit(existing.id);
+      navigate('/', { replace: true });
+    } catch (restoreError) {
+      setError(restoreError instanceof Error ? restoreError.message : 'Could not restore.');
+      setBusy(false);
     }
   }
 
@@ -267,21 +280,40 @@ export function HabitEditor() {
       </form>
 
       {existing ? (
-        <div className="card card-pad danger-zone">
+        <div className={`card card-pad${existing.archived ? '' : ' danger-zone'}`}>
           <div>
-            <p className="row-title">{confirmArchive ? 'Archive this habit?' : 'Archive habit'}</p>
+            <p className="row-title">
+              {existing.archived
+                ? 'Restore habit'
+                : confirmArchive
+                  ? 'Archive this habit?'
+                  : 'Archive habit'}
+            </p>
             <p className="row-sub">
-              It disappears from Today, keeps its history, and can be restored later.
+              {existing.archived
+                ? 'This habit is archived. Restore it to bring it back to Today.'
+                : 'It disappears from Today, keeps its history, and can be restored later.'}
             </p>
           </div>
-          <button
-            type="button"
-            className={`btn ${confirmArchive ? 'btn-danger' : 'btn-ghost'}`}
-            onClick={handleArchive}
-            disabled={busy}
-          >
-            {confirmArchive ? 'Yes, archive' : 'Archive'}
-          </button>
+          {existing.archived ? (
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => void handleRestore()}
+              disabled={busy}
+            >
+              {busy ? 'Restoring…' : 'Restore'}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={`btn ${confirmArchive ? 'btn-danger' : 'btn-ghost'}`}
+              onClick={() => void handleArchive()}
+              disabled={busy}
+            >
+              {confirmArchive ? 'Yes, archive' : 'Archive'}
+            </button>
+          )}
         </div>
       ) : null}
     </div>

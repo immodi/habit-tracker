@@ -69,6 +69,7 @@ fun HabitEditorScreen(
     onCreate: (HabitDraft) -> Unit,
     onUpdate: (habitId: String, draft: HabitDraft) -> Unit,
     onArchive: (habitId: String) -> Unit,
+    onRestore: (habitId: String) -> Unit,
 ) {
     val isEditing = habitId != null
     val habit: Habit? = habitId?.let { id -> state.habits.firstOrNull { it.id == id } }
@@ -262,27 +263,39 @@ fun HabitEditorScreen(
             AppCard {
                 Column(Modifier.padding(20.dp)) {
                     Text(
-                        if (confirmArchive) "Archive this habit?" else "Archive habit",
+                        when {
+                            habit.archived -> "Restore habit"
+                            confirmArchive -> "Archive this habit?"
+                            else -> "Archive habit"
+                        },
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        "It disappears from Today, keeps its history, and can be restored later.",
+                        if (habit.archived) {
+                            "This habit is archived. Restore it to bring it back to Today."
+                        } else {
+                            "It disappears from Today, keeps its history, and can be restored later."
+                        },
                         style = MaterialTheme.typography.bodySmall,
                         color = AppColors.Muted,
                     )
                     Spacer(Modifier.height(14.dp))
                     SecondaryButton(
-                        text = if (confirmArchive) "Yes, archive" else "Archive",
+                        text = when {
+                            habit.archived -> "Restore"
+                            confirmArchive -> "Yes, archive"
+                            else -> "Archive"
+                        },
                         onClick = {
-                            if (confirmArchive) {
-                                onArchive(habit.id)
-                            } else {
-                                confirmArchive = true
+                            when {
+                                habit.archived -> onRestore(habit.id)
+                                confirmArchive -> onArchive(habit.id)
+                                else -> confirmArchive = true
                             }
                         },
-                        danger = confirmArchive,
+                        danger = !habit.archived && confirmArchive,
                         enabled = !busy,
                     )
                 }

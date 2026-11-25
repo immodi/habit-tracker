@@ -598,49 +598,6 @@ a {
   font-variant-numeric: tabular-nums;
 }
 
-.week-strip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: auto;
-}
-
-.dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--surface-3);
-  border: 1px solid transparent;
-  display: block;
-}
-
-.dot.done {
-  background: var(--accent);
-}
-
-.dot.missed {
-  background: transparent;
-  border-color: var(--line-strong);
-}
-
-.dot.off {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.dot.empty {
-  background: rgba(255, 255, 255, 0.075);
-}
-
-.dot.future {
-  background: transparent;
-  border-color: rgba(255, 255, 255, 0.06);
-}
-
-.dot.is-today {
-  outline: 1.5px solid rgba(255, 255, 255, 0.38);
-  outline-offset: 2px;
-}
-
 .add-button {
   margin-top: 2px;
 }
@@ -1324,15 +1281,6 @@ a {
   .toggle {
     width: 42px;
     height: 42px;
-  }
-
-  .week-strip {
-    gap: 3px;
-  }
-
-  .dot {
-    width: 6px;
-    height: 6px;
   }
 
   .stat {

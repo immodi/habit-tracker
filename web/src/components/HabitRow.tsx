@@ -1,13 +1,12 @@
 import { Link } from 'react-router-dom';
 import type { Habit } from '../lib/types';
-import { currentStreak, dayCells, periodProgress } from '../lib/streaks';
+import { currentStreak, periodProgress } from '../lib/streaks';
 import {
   isFlexible,
   scheduleFromHabit,
   streakSuffix,
   thisPeriodLabel,
 } from '../lib/schedule';
-import { WeekStrip } from './WeekStrip';
 import { CheckIcon, FlameIcon } from './icons';
 
 interface HabitRowProps {
@@ -21,7 +20,6 @@ export function HabitRow({ habit, logs, today, onToggle }: HabitRowProps) {
   const schedule = scheduleFromHabit(habit);
   const done = logs.has(today);
   const streak = currentStreak(schedule, logs, today);
-  const week = dayCells(schedule, logs, today, 7);
   const flexible = isFlexible(schedule);
   const progress = flexible ? periodProgress(schedule, logs, today) : null;
 
@@ -58,7 +56,6 @@ export function HabitRow({ habit, logs, today, onToggle }: HabitRowProps) {
           <CheckIcon size={22} />
         </button>
         <span className="meta-text">{statusText}</span>
-        <WeekStrip cells={week} today={today} />
       </div>
     </article>
   );
